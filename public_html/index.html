@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>Snake Game</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body onload="resizeCanvas();">
+        
+        <div id = "start"> Press UP, DOWN, LEFT or RIGHT to start! </div>
+        <canvas id ="gameWindow" width="300" height="300"></canvas>
+        
+        <script>
+            
+            roundToMulti(window.innerHeight, 300);
+            var scaleFactor = result/300;
+            
+            var countDown = 1000;
+            
+            var date = new Date();
+            var endCountdown = false;
+            
+            var endHelp = false;
+            
+            var oldText = "";
+            var oldScaleFactor = scaleFactor;
+            
+            function resizeCanvas(){
+                
+                var canvas = document.getElementById("gameWindow");
+                roundToMulti(window.innerHeight, 300);
+                canvas.width = result;
+                canvas.height = result;
+                
+                scaleFactor = result/300;
+                
+                console.log("Canvas Size: " + result + "\nscale Factor: " + scaleFactor + "\nWindow Height: " + window.innerHeight);
+                
+            }
+            
+            function roundToMulti(x, multi){
+                
+               result = x;
+               if(result % multi){
+                   
+                   var remainder = result % multi;
+                   if(remainder >= multi/2){
+                       result += multi - remainder;
+                   }else{
+                       result -= remainder;
+                   }
+                   
+               }
+               result = Math.round(result * 100) / 100;
+            }
+            
+            /** Constants **/
+            const CANVAS_BORDER_COLOUR = 'black';
+            const CANVAS_BACKGROUND_COLOUR = 'white';
+            
+            //Get the Canvas elements
+            var gameWindow = document.getElementById("gameWindow");
+            
+            //Score
+            var playerScore = 0;
+            
+            
+            //Two dimenstional drawing context
+            var ctx = gameWindow.getContext("2d");
+            
+            //Canvas Color
+            ctx.fillStyle = CANVAS_BACKGROUND_COLOUR;
+            ctx.strokestyle = CANVAS_BORDER_COLOUR;
+            
+            ctx.fillRect(0, 0, gameWindow.width*scaleFactor, gameWindow.height*scaleFactor);
+            ctx.strokeRect(0, 0, gameWindow.width*scaleFactor, gameWindow.height*scaleFactor);
+                        
+            let snake = [
+                {x: scaleFactor*150, y: (scaleFactor*150)},
+                {x: (scaleFactor*140), y: (scaleFactor*150)},
+                {x: (scaleFactor*130), y: (scaleFactor*150)},
+                {x: (scaleFactor*120), y: (scaleFactor*150)},
+                {x: (scaleFactor*110), y: (scaleFactor*150)}
+            ];
+            
+            console.log(snake[0].x);
+            
+            
+            
+            let dx = 0;
+            let dy = 0;
+            
+            var gameStarted = false;
+            
+            
+            //Start Game
+            dx = 10*scaleFactor;
+            dy = 0;
+            var pressedDelay = 0;
+            ctx.font = 40 * scaleFactor + "px Arial";
+           
+            
+            //create first Food
+            createFood();
+            
+            //KeyDown
+           document.addEventListener("keydown", changeDirection);
+           
+          
+           
+            
+            function drawSnakePart(snakePart){
+                
+            ctx.fillStyle = 'lightgreen';
+            ctx.strokestyle = 'darkgreen';
+            
+            ctx.fillRect(snakePart.x, snakePart.y, 10*scaleFactor, 10*scaleFactor);
+            ctx.strokeRect(snakePart.x, snakePart.y, 10*scaleFactor, 10*scaleFactor);
+                
+            }
+            
+            function drawSnake(){
+                snake.forEach(drawSnakePart);
+            }
+            
+            function advanceSnake(){
+                const head = {x: snake[0].x + dx, y: snake[0].y + dy};
+                snake.unshift(head);
+                
+                const didEatFood = snake[0].x === foodX && snake[0].y === foodY;
+                if(didEatFood){
+                    
+                    playerScore += 10;
+                    createFood();
+                    
+                }else{
+                
+                    snake.pop();
+                    
+                }
+                
+            }
+            
+            function clearCanvas(){
+                
+                ctx.fillStyle = "white";
+                ctx.strokeStyle = "black";
+                
+                ctx.clearRect(0,0, gameWindow.height, gameWindow.width);
+                ctx.fillRect(0,0, gameWindow.width, gameWindow.height);
+                ctx.strokeRect(0,0, gameWindow.width, gameWindow.height);
+                
+            }
+            
+            function changeDirection(event){
+                
+                if(pressedDelay <= 0){
+                    
+                    const LEFT_KEY = 37;
+                const RIGHT_KEY = 39;
+                const UP_KEY = 38;
+                const DOWN_KEY = 40;
+                const R_KEY = 82;
+                
+                const keyPressed = event.keyCode;
+                const key = event.key;
+                const goingUp = dy === -10*scaleFactor;
+                const goingDown = dy === 10*scaleFactor;
+                const goingRight = dx === 10*scaleFactor;
+                const goingLeft = dx === -10*scaleFactor;
+                
+                if(endHelp === true){
+                    
+                    if(keyPressed !== 0){
+                        
+                        reset();
+                        
+                    }
+                    
+                }
+                
+                if(keyPressed === LEFT_KEY &&!goingRight){
+                    
+                    dx = -10*scaleFactor;
+                    dy = 0;
+                    pressedDelay = 1;
+                    console.log(snake[0].x + " Y:" + snake[0].y);
+                }
+                
+                if(keyPressed === RIGHT_KEY &&!goingLeft){
+                    
+                    dx = 10*scaleFactor;
+                    dy = 0;
+                    pressedDelay = 1;
+                    console.log(snake[0].x + " Y:" + snake[0].y);
+                }
+                
+                if(keyPressed === DOWN_KEY &&!goingUp){
+                    
+                    dy = 10*scaleFactor;
+                    dx = 0;
+                    pressedDelay = 1;
+                    console.log(snake[0].x + " Y:" + snake[0].y);
+                }
+                
+                if(keyPressed === UP_KEY &&!goingDown){
+                    
+                    dy = -10*scaleFactor;
+                    dx = 0;
+                    pressedDelay = 1;
+                    console.log(snake[0].x + " Y:" + snake[0].y);
+                }
+                
+                if(keyPressed === 82 && calledReset === false && gameStarted === false){
+                    
+                    reset();
+                    console.log("Called reset");
+                    
+                    gameStarted = true;
+                    
+                }
+                
+                if(gameStarted === false && endHelp === false){
+                    
+                    if(keyPressed !== UP_KEY || keyPressed !== DOWN_KEY || keyPressed !== LEFT_KEY || keyPressed !== RIGHT_KEY){
+                    
+                    
+                    countDownTimerNClock(3);
+                    gameStarted = true;
+                        
+                    }
+     
+                    
+                }
+                    
+                }
+                
+            }
+            
+            function randomTen(min, max){
+                
+                return Math.round((Math.random() * (min-max) + min)/10*scaleFactor) *10*scaleFactor;
+                //retrun Math.round((Math.random() * (min-max) + min) /10)*10;
+                
+            }
+            
+            function createFood(){
+                
+                foodX = randomTen(0, gameWindow.width);
+                foodY = randomTen(0, gameWindow.height);
+                
+                foodX = foodX * -1;
+                foodY = foodY * -1;
+                
+                
+                snake.forEach(function isFoodOnSnake(part){
+                    const foodIsOnSnake = part.x === foodX && part.y === foodY;
+                    if(foodIsOnSnake)
+                        createFood();
+                    });
+                    
+                if(foodX +10*scaleFactor < gameWindow.height && foodY +10*scaleFactor < gameWindow.height && foodX -10*scaleFactor >= 0 && foodY -10*scaleFactor >= 0){
+                    
+                    console.log("Window: " + gameWindow.height);
+                    console.log("ScaleFactor " + scaleFactor);
+                    
+                    console.log("Food generated");
+                    console.log("Food X: " + foodX);
+                    console.log("Food Y: " + foodY);
+                    
+                }else{
+                    
+                    createFood();
+                    
+                }
+                    
+                }
+            
+            function drawFood(){
+                
+                ctx.fillStyle = 'red';
+                ctx.strokeStyle = 'darkred';
+                ctx.fillRect(foodX, foodY, 10*scaleFactor, 10*scaleFactor);
+                ctx.strokeRect(foodX, foodY, 10*scaleFactor, 10*scaleFactor);
+ 
+            }
+            
+            function main(){
+                
+               
+                
+                setTimeout(function onTick(){
+                    clearCanvas();
+                    drawFood();
+                    advanceSnake();
+                    drawSnake();
+                    
+                    pressedDelay -= 1;
+                    drawText("Score: " + playerScore, false);
+                                        
+                    if(didEndGame() || endHelp === true){ 
+                    
+                    ctx.clearRect(0,0, gameWindow.height, gameWindow.width);
+                    resizeCanvas();
+                    drawText("You lost! Reset: Any key", "#C30000", true);
+                    gameStarted = false;
+                    endHelp = true;
+            
+                    return;
+                    }
+                    
+                    
+                    
+                    main();
+                }, 100);
+            }
+            
+            
+            
+            
+            function didEndGame(){
+                
+                for (let i = 4; i < snake.length; i++){
+                    
+                    const didCollide = snake[i].x === snake[0].x && snake[i].y === snake[0].y;
+                    
+                    if(didCollide){ return true; }
+                    
+                }
+                
+                const hitLeftWall = snake[0].x < 0;
+                const hitRightWall = snake[0].x > gameWindow.width - 10*scaleFactor;
+                const hitToptWall = snake[0].y < 0;
+                const hitBottomWall = snake[0].y > gameWindow.height - 10*scaleFactor;
+                return hitLeftWall || 
+                hitRightWall || 
+                hitToptWall ||
+                hitBottomWall;
+                
+            }
+            
+            function reset(){
+                
+                console.log("callde RESET!");
+                window.location.reload(true);
+                        
+            }
+            
+            function countDownTimerNClock(timeInSeconds){
+                var startTime = new Date().getTime();
+                var endTime = startTime + (timeInSeconds * 1000);
+                
+                var x = setInterval(function(){
+                    
+                    var now = new Date().getTime();
+                    var distance = endTime - now;
+                    
+                    console.log("Distance: " + distance);
+                    console.log("Now: " + now);
+                    
+                    ctx.clearRect(0,0, gameWindow.height, gameWindow.width);
+                    drawText("Start in " + Math.round(distance/1000) + " seconds!", false);
+                    
+                    if(distance <= 0){
+                        
+                        console.log("Called main");
+                        main();
+                        document.getElementById("start").innerHTML = " ";
+                        console.log("CountDown Finished!");
+                        clearInterval(x);
+                        gameStarted = true;
+                        calledReset = false;
+                        return;
+                        
+                    }
+                    if(distance < -5){
+                        
+                        console.log("-5 CountDown!");
+                        
+                    }
+                    
+                }, 1000);
+            }    
+            
+            function drawText(text, small){
+                
+                if(small === true){
+                    
+                clearCanvas();
+                    
+                ctx.fillStyle = "#000000";
+                ctx.font = 20 * scaleFactor + "px Arial";
+                ctx.fillText(text, 10, 10*scaleFactor);
+                
+                oldText = text;
+                oldScaleFactor = scaleFactor;
+                
+                drawSnake();
+                drawFood();
+                
+                    
+                }else{
+                    
+                    ctx.fillStyle = "#000000";
+                ctx.font = 20 * scaleFactor + "px Arial";
+                ctx.fillText(text, 10, 20*scaleFactor);
+                
+                oldText = text;
+                oldScaleFactor = scaleFactor;
+                
+                    
+                }
+                
+                if(scaleFactor !== oldScaleFactor){
+                    
+                    main();
+                    endHelp = true;
+                    reset();
+                    return;
+                    
+                }
+                
+                //ctx.font = 20 * oldScaleFactor + "px Arial";
+                //ctx.fillStyle = "#FFFFFF";
+                //ctx.fillText(oldText, 10, 20*oldScaleFactor);
+
+                
+            }
+                
+            
+        </script>
+    </body>
+</html>
